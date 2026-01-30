@@ -3,7 +3,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -20,9 +21,24 @@ public class HelloFX extends Application {
             System.out.println("pressed");
         });
 
+        Image testpng = new Image("/test.png", true);
+        Image testpng1 = new Image("/test1.png", true);
+        ImageView iView = new ImageView();
+        iView.setOnMouseClicked((a)->{
+            System.out.println("Bild gedrückt");
+            if(testpng.equals(iView.getImage())) {
+                iView.setImage(testpng1);
+            }else{
+                iView.setImage(testpng);
+            }
+
+        });
+        iView.setImage(testpng);
+
+
         VBox stack = new VBox(10.0);
         stack.setAlignment(Pos.CENTER);
-        stack.getChildren().addAll(button, l);
+        stack.getChildren().addAll(button, l, iView);
 
 
         Scene scene = new Scene(stack, 640, 480);
