@@ -17,9 +17,7 @@ public class HelloFX extends Application {
         Label l = new Label("Hello, JavaFX " + javafxVersion + ", running on Java " + javaVersion + ".");
         Button button = new Button("Drück mich");
         button.isDefaultButton();
-        button.setOnAction((a)->{
-            System.out.println("pressed");
-        });
+        button.setOnAction((a)->System.out.println("pressed"));
 
         Image testpng = new Image("/test.png", true);
         Image testpng1 = new Image("/test1.png", true);
