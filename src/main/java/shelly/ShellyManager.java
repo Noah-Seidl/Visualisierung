@@ -1,9 +1,13 @@
 package shelly;
 
 import javafx.application.Platform;
+import javafx.scene.input.InputMethodRequests;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
@@ -21,7 +25,8 @@ public class ShellyManager extends Subject{
     public void createShellyList()
     {
         try{
-            BufferedReader reader = new BufferedReader(new FileReader("/home/nobadabo/Visualisierung/src/main/resources/shellys.csv"));
+            InputStream is = getClass().getResourceAsStream("/shellys.csv");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
             String line;
             while((line = reader.readLine()) != null){
                 System.out.println("Line: " + line);

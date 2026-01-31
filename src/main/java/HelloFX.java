@@ -47,7 +47,7 @@ public class HelloFX extends Application implements Observer {
         manager.startStatusCheck();
         shellys = manager.getList();
         try {
-            shellyTemp = new ShellyTemp("192.168.2.41", 1);
+            shellyTemp = new ShellyTemp("192.168.2.41", 0);
             shellyEm3 = new ShellyEm3("192.168.2.40", 0);
         }catch (Exception e){ System.out.println(e.getMessage());}
 
