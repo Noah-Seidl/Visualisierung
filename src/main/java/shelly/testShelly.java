@@ -1,19 +1,13 @@
 package shelly;
 
-import java.util.Arrays;
-
 public class testShelly {
     public static void main(String[] args) {
-        try {
-            ShellyTemp shelly = new ShellyTemp("192.168.2.41", 0);
-            String tmp = shelly.getTemp();
-            System.out.println("Power: " + Arrays.toString(tmp.split("T")));
-
-
-        }catch (Exception ignored){}
+        ShellyDevice shelly = ShellyFactory.autoDetect("192.168.2.11", 0);
 
 
 
+        if(shelly != null)
+            System.out.println(shelly.status());
 
     }
 }
