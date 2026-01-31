@@ -7,7 +7,6 @@ import java.net.http.HttpResponse;
 
 public class Shelly2PM extends ShellyBase{
 
-
     protected Shelly2PM(String ip, int channel) throws Exception {
         super(ip, channel);
     }
@@ -21,10 +20,10 @@ public class Shelly2PM extends ShellyBase{
     public Boolean status() {
         try {
             HttpResponse<String> response = client.send(requestStatus, HttpResponse.BodyHandlers.ofString());
-
+            status = response.body().contains("\"output\":true");
             return response.body().contains("\"output\":true");
         }catch (Exception e){
-            return null;
+            return status;
         }
     }
 

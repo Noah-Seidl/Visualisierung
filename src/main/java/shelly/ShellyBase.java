@@ -6,7 +6,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
-public abstract class ShellyBase implements ShellyDevice{
+public abstract class ShellyBase implements ShellyDevice {
+    protected double x,y;
+    protected Boolean status = false;
     protected String ip;
     protected int channel;
     protected HttpRequest requestStatus;
@@ -60,4 +62,18 @@ public abstract class ShellyBase implements ShellyDevice{
         }
         return false;
     }
+
+    public boolean getStatus(){return status;}
+
+    public ShellyDevice addCoords(double x, double y)
+    {
+        this.x = x;
+        this.y = y;
+        return this;
+    }
+
+    public double getX(){return x;}
+    public double getY(){return y;}
+
+
 }
