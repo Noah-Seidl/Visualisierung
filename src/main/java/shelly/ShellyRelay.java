@@ -18,9 +18,10 @@ public class ShellyRelay extends ShellyBase{
     public Boolean status() {
         try {
             HttpResponse<String> response = client.send(requestStatus, HttpResponse.BodyHandlers.ofString());
+            status = response.body().contains("\"ison\":true");
             return response.body().contains("\"ison\":true");
         }catch (Exception e){
-            return null;
+            return status;
         }
     }
 

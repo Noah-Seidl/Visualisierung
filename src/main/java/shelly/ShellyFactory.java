@@ -10,25 +10,18 @@ public class ShellyFactory {
         ShellyDevice shelly = null;
         try {
             shelly = new Shelly2PM(ip, channel);
-            if(shelly != null)
-                return shelly;
-        } catch (Exception e) {
-
-        }
+            return shelly;
+        } catch (Exception ignored) {}
 
         try {
             shelly = new ShellyRelay(ip, channel);
-            if(shelly != null)
-                return shelly;
-        } catch (Exception e) {
-        }
+            return shelly;
+        } catch (Exception ignored) {}
 
         try {
             shelly = new ShellyLight(ip, channel);
-            if(shelly != null)
-                return shelly;
-        } catch (Exception e) {
-        }
+            return shelly;
+        } catch (Exception ignored) {}
 
         return null;
     }
