@@ -8,6 +8,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+
 public class HelloFX extends Application {
 
     @Override
@@ -19,8 +20,8 @@ public class HelloFX extends Application {
         button.isDefaultButton();
         button.setOnAction((a)->System.out.println("pressed"));
 
-        Image testpng = new Image("/test.png", true);
-        Image testpng1 = new Image("/test1.png", true);
+        Image testpng = new Image("/bulbOff.png", true);
+        Image testpng1 = new Image("/bulbOn.png", true);
         ImageView iView = new ImageView();
         iView.setOnMouseClicked((a)->{
             System.out.println("Bild gedrückt");
@@ -29,10 +30,9 @@ public class HelloFX extends Application {
             }else{
                 iView.setImage(testpng);
             }
-
         });
         iView.setImage(testpng);
-
+        iView.setPickOnBounds(true);
 
         VBox stack = new VBox(10.0);
         stack.setAlignment(Pos.CENTER);
