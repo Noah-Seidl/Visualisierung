@@ -13,7 +13,7 @@ public class ShellyTemp extends ShellyBase{
         return "http://" + ip + "/status";
     }
 
-    public String getTemp()
+    public String[] getTemp() throws ShellyException
     {
         try {
             HttpResponse<String> response = client.send(requestStatus, HttpResponse.BodyHandlers.ofString());
@@ -26,14 +26,12 @@ public class ShellyTemp extends ShellyBase{
             index1 = response.body().indexOf("\"tC\":", index2) + 5;
             index2 = response.body().indexOf(',', index1);
             String helper3 = response.body().substring(index1,index2);
-            return helper1 + "T" + helper2 + "T" + helper3;
+            return new String[]{helper1, helper2, helper3};
         }catch (Exception e){
             System.out.println("Fehler Response" + e.getMessage());
-            return "Error Tmp+Error Tmp+Error TmpTTT";
+            throw new ShellyException("TMP Sensor Fehler");
         }
     }
-
-
 
     @Override
     public Boolean status() {

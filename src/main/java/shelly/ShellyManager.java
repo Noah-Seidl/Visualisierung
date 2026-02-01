@@ -24,6 +24,7 @@ public class ShellyManager extends Subject{
 
     public void createShellyList()
     {
+        //Alle lichter Shellys werden initialisiert
         try{
             InputStream is = getClass().getResourceAsStream("/shellys.csv");
             BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
@@ -37,20 +38,20 @@ public class ShellyManager extends Subject{
                     shellys.add(shelly);
                 }
 
-                Thread.sleep(50);
+                Thread.sleep(100);
             }
             reader.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+
+
+
+
     }
 
-
-
-    public void addShelly(ShellyDevice shelly)
-    {
-        shellys.add(shelly);
-    }
+    public void addShelly(ShellyDevice shelly) {shellys.add(shelly);}
 
     public void startStatusCheck(){
         statusTimer = new Timer();

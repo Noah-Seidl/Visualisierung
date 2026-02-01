@@ -1,7 +1,6 @@
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -29,16 +28,7 @@ public class HelloFX extends Application implements Observer {
     ShellyManager manager;
 
     Label clock = new Label("0");
-    Label powerLabel = new Label("0");
-    Label outTmp = new Label("0");
-    Label radiatorTmp = new Label("0");
-    Label boilerTmp = new Label("0");
-
-    private int i = 0;
-
-    ShellyTemp shellyTemp;
-    ShellyEm3 shellyEm3;
-
+    StatusVBox statusVBox;
 
     @Override
     public void start(Stage stage) {
@@ -46,10 +36,7 @@ public class HelloFX extends Application implements Observer {
         manager.registerObserver(this);
         manager.startStatusCheck();
         shellys = manager.getList();
-        try {
-            shellyTemp = new ShellyTemp("192.168.2.41", 0);
-            shellyEm3 = new ShellyEm3("192.168.2.40", 0);
-        }catch (Exception e){ System.out.println(e.getMessage());}
+
 
 
         //
@@ -78,48 +65,29 @@ public class HelloFX extends Application implements Observer {
             iView.setPickOnBounds(true);
             imageViews.add(iView);
         }
-        //jede Sekunde Update
-        Timeline timeline = new Timeline(
-                new KeyFrame(Duration.seconds(1), (actionEvent) -> {
-                    setClockLabel(); //Uhrzeit aktualisierung
-                    setStatusLabels();
-                })
-        );
+
 
         //Labels
         clock.setFont(new Font(35));
         clock.setLayoutX(350);
         clock.setLayoutY(-8);
 
-        //Status Labels:
-        Label l1 = new Label("Gesamtleistung: ");
-        l1.setFont(new Font(35));
+        statusVBox = new StatusVBox(5);
 
-        Label l2 = new Label("Außentemperatur:");
-        l2.setFont(new Font(35));
-
-        Label l3 = new Label("Boilertemperatur:");
-        l3.setFont(new Font(35));
-
-        Label l4 = new Label("Vorlauftemperatur:");
-        l4.setFont(new Font(35));
-
-        powerLabel.setFont(new Font(30));
-        outTmp.setFont(new Font(30));
-        radiatorTmp.setFont(new Font(30));
-        boilerTmp.setFont(new Font(30));
+        //jede Sekunde Update
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.seconds(1), (actionEvent) -> {
+                    setClockLabel(); //Uhrzeit aktualisierung
+                    statusVBox.update();
+                })
+        );
 
 
-        VBox vbox = new VBox(5);
-        vbox.setAlignment(Pos.TOP_CENTER);
-        vbox.getChildren().addAll(l1, powerLabel, l2, outTmp, l3, boilerTmp, l4, radiatorTmp);
-        vbox.setLayoutX(1030);
-        vbox.setLayoutY(20);
 
         Pane pane = new Pane();
         pane.getChildren().add(backgroundView);
         pane.getChildren().addAll(imageViews);
-        pane.getChildren().addAll(clock, vbox);
+        pane.getChildren().addAll(clock, statusVBox);
 
         Scene scene = new Scene(pane, 1366, 768);
 
@@ -151,19 +119,7 @@ public class HelloFX extends Application implements Observer {
         clock.setText(timestr);
     }
 
-    private void setStatusLabels(){
-        if(++i > 10)
-        {
-            i = 0;
-            String[] tmps = shellyTemp.getTemp().split("T");
 
-            String power = shellyEm3.getPower();
-            powerLabel.setText(power + 'W');
-            outTmp.setText(tmps[0] + "C");
-            boilerTmp.setText(tmps[1] + "C");
-            radiatorTmp.setText(tmps[2] + "C");
-        }
-    }
 
 
 
