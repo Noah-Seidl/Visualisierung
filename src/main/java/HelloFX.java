@@ -1,6 +1,7 @@
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -59,8 +60,10 @@ public class HelloFX extends Application implements Observer {
             iView.setImage(bulbOff);
             iView.setOnMouseClicked((a)->{
                 System.out.println("Toggle");
-                shelly.toggle();
-                update();
+                new Thread(()->{
+                    shelly.toggle();
+                    //Platform.runLater(this::update);
+                }).start();
             });
             iView.setPickOnBounds(true);
             imageViews.add(iView);
