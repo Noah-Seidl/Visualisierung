@@ -16,10 +16,10 @@ public abstract class Subject {
         observerList.add(o);
     }
 
-    public void notifyO()
+    public void notifyO(List<Integer> index)
     {
         for (Observer observer : observerList) {
-            observer.update();
+            observer.update(index);
         }
     }
 

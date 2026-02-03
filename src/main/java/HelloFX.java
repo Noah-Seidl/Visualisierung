@@ -7,7 +7,6 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -52,19 +51,23 @@ public class HelloFX extends Application implements Observer {
 
         imageViews = new LinkedList<>();
         //Alle ShellyDevices Zeichnen
-        for(ShellyDevice shelly:shellys)
-        {
+        for (int i = 0; i < shellys.size(); i++) {
+            ShellyDevice shelly = shellys.get(i);
+
             ImageView iView = new ImageView();
             iView.setX(shelly.getX());
             iView.setY(shelly.getY());
             iView.setImage(bulbOff);
+            int finalI = i;
+
             iView.setOnMouseClicked((a)->{
-                System.out.println("Toggle");
+                System.out.println("Toggle" + finalI);
                 new Thread(()->{
-                    shelly.toggle();
-                    //Platform.runLater(this::update);
+                    boolean status = shelly.toggle();
+                    Platform.runLater(()->updateSingle(finalI, status));
                 }).start();
             });
+
             iView.setPickOnBounds(true);
             imageViews.add(iView);
         }
@@ -129,17 +132,26 @@ public class HelloFX extends Application implements Observer {
 
 
     @Override
-    public void update() {
-        System.out.println("Ein shelly status hat sich geändert");
-        for (int i = 0; i < shellys.size(); i++) {
-            if (shellys.get(i).status()) {
+    public void update(List<Integer> index) {
+        System.out.println("Ein shelly status hat sich geändert Shelly geändert: " + index);
+        for (int i  : index)
+        {
+            if(shellys.get(i).getStatus())
                 imageViews.get(i).setImage(bulbOn);
-            } else {
+            else
                 imageViews.get(i).setImage(bulbOff);
-            }
         }
-        
-        
-        
     }
+
+    @Override
+    public void updateSingle(int index, boolean status) {
+        System.out.println("Index: " + index + " Status: " + status);
+
+        if(status)
+            imageViews.get(index).setImage(bulbOn);
+        else
+            imageViews.get(index).setImage(bulbOff);
+    }
+
+
 }

@@ -12,12 +12,10 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Timer;
 
 public class ShellyManager extends Subject{
     List<ShellyDevice> shellys = new LinkedList<>();
     private Timeline timeline;
-    private int i = 0;
 
     public ShellyManager(){
         createShellyList();
@@ -52,7 +50,7 @@ public class ShellyManager extends Subject{
 
     public void startStatusCheck(){
         timeline = new Timeline(
-                new KeyFrame(Duration.seconds(1), actionEvent -> {
+                new KeyFrame(Duration.seconds(shellys.size()), actionEvent -> {
                     new Thread(this::updateStatus).start();
                 }));
         timeline.setCycleCount(Timeline.INDEFINITE);
@@ -64,17 +62,27 @@ public class ShellyManager extends Subject{
     }
 
 
-    public void updateStatus()
-    {
-            ShellyDevice shelly = shellys.get(i++);
-            System.out.println("Status: " + shelly.getStatus());
-            //System.out.println("Status Check: " + shelly.getStatus() + " new status: " + shelly.status());
-            if(shelly.getStatus() != shelly.status())
-               Platform.runLater(this::notifyO);
+    public void updateStatus() {
+        List<Integer> indexList = new LinkedList<>();
+        for (int index = 0; index < shellys.size() - 1; index++) {
 
-            if(i>=shellys.size())
-                i = 0;
 
+            ShellyDevice shelly = shellys.get(index);
+            boolean oldStatus = shelly.getStatus();
+            boolean newStatus = shelly.status();
+
+            System.out.println("Shelly Status: " + oldStatus);
+
+            if (oldStatus != newStatus)
+                indexList.add(index);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                System.out.println("Sleep fehler");
+            }
+
+        }
+        Platform.runLater(() -> notifyO(indexList));
     }
 
     public List<ShellyDevice> getList()

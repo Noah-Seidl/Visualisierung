@@ -57,6 +57,8 @@ public abstract class ShellyBase implements ShellyDevice {
         try {
             HttpResponse<String> response = client.send(requestToggle, HttpResponse.BodyHandlers.ofString());
             System.out.println("Toggle Response: " + response.body());
+            status = response.body().contains("\"ison\": true,") || response.body().contains("\"ison\":true,");
+            return status;
         } catch (Exception e) {
             System.out.println("Fehler in toggle Shelly: " + e.getMessage());
         }
