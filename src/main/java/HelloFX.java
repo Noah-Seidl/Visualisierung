@@ -11,16 +11,18 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import shelly.*;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 public class HelloFX extends Application implements Observer {
     List<ShellyDevice> shellys;
-    List<ImageView> imageViews;
+    Map<Integer, ShellyViewWrapper> ShellyViewMap;
+
 
     Image bulbOff;
     Image bulbOn;
@@ -31,17 +33,34 @@ public class HelloFX extends Application implements Observer {
     StatusVBox statusVBox;
 
     @Override
-    public void start(Stage stage) {
+    @SuppressWarnings("BusyWait")
+    public void init() throws Exception {
+        super.init();
         manager = new ShellyManager();
+        int status;
+        while ((status = manager.createShellyList()) == 0){Thread.sleep(500);}
+
+        if(status == -1)
+            throw new Exception("Manager Fehler");
+
+        while((status = StatusVBox.initShelly()) == 0){Thread.sleep(500);}
+
+        if(status == -1)
+            throw new Exception("Temp oder Em3 Fehler");
+
         manager.registerObserver(this);
         manager.startStatusCheck();
         shellys = manager.getList();
+        ShellyViewMap = new HashMap<>();
+    }
 
-
-
-        //
+    @Override
+    public void start(Stage stage) {
+        //Lichter icons
         bulbOff = new Image("/bulbOff.png", true);
         bulbOn = new Image("/bulbOn.png", true);
+
+        //Background Setzen
         Image backgroundImage = new Image("/HausVisEnhanced.jpg", true);
         ImageView backgroundView = new ImageView(backgroundImage);
         backgroundView.setPreserveRatio(true);
@@ -49,27 +68,15 @@ public class HelloFX extends Application implements Observer {
         backgroundView.setFitWidth(1300);
         backgroundView.setY(40);
 
-        imageViews = new LinkedList<>();
+
+
         //Alle ShellyDevices Zeichnen
         for (int i = 0; i < shellys.size(); i++) {
             ShellyDevice shelly = shellys.get(i);
+            ImageView iView = getImageView(shelly, i);
 
-            ImageView iView = new ImageView();
-            iView.setX(shelly.getX());
-            iView.setY(shelly.getY());
-            iView.setImage(bulbOff);
-            int finalI = i;
-
-            iView.setOnMouseClicked((a)->{
-                System.out.println("Toggle" + finalI);
-                new Thread(()->{
-                    boolean status = shelly.toggle();
-                    Platform.runLater(()->updateSingle(finalI, status));
-                }).start();
-            });
-
-            iView.setPickOnBounds(true);
-            imageViews.add(iView);
+            ShellyViewWrapper wrapper = new ShellyViewWrapper(shelly, iView);
+            ShellyViewMap.put(shelly.getId(), wrapper);
         }
 
 
@@ -88,11 +95,16 @@ public class HelloFX extends Application implements Observer {
                 })
         );
 
-
-
         Pane pane = new Pane();
         pane.getChildren().add(backgroundView);
-        pane.getChildren().addAll(imageViews);
+
+
+
+        pane.getChildren().addAll(ShellyViewMap.values()
+                .stream()
+                .map(ShellyViewWrapper::getView)
+                .collect(Collectors.toList()));
+
         pane.getChildren().addAll(clock, statusVBox);
 
         Scene scene = new Scene(pane, 1366, 768);
@@ -105,6 +117,24 @@ public class HelloFX extends Application implements Observer {
         stage.show();
         stage.setFullScreen(true);
     }
+
+    private ImageView getImageView(ShellyDevice shelly, int i) {
+        ImageView iView = new ImageView();
+        iView.setX(shelly.getX());
+        iView.setY(shelly.getY());
+        iView.setImage(bulbOff);
+
+        iView.setOnMouseClicked((a)->{
+            System.out.println("Toggle" + i);
+            new Thread(()->{
+                boolean status = shelly.toggle();
+                Platform.runLater(()->updateSingle(i, status));
+            }).start();
+        });
+        iView.setPickOnBounds(true);
+        return iView;
+    }
+
     @Override
     public void stop() throws Exception{
         manager.stopStatusCheck();
@@ -126,20 +156,17 @@ public class HelloFX extends Application implements Observer {
     }
 
 
-
-
-
-
-
     @Override
     public void update(List<Integer> index) {
         System.out.println("Ein shelly status hat sich geändert Shelly geändert: " + index);
         for (int i  : index)
         {
-            if(shellys.get(i).getStatus())
-                imageViews.get(i).setImage(bulbOn);
+            ShellyViewWrapper ShellyView= ShellyViewMap.get(i);
+
+            if(ShellyView.getShelly().getStatus())
+                ShellyView.getView().setImage(bulbOn);
             else
-                imageViews.get(i).setImage(bulbOff);
+                ShellyView.getView().setImage(bulbOff);
         }
     }
 
@@ -147,10 +174,12 @@ public class HelloFX extends Application implements Observer {
     public void updateSingle(int index, boolean status) {
         System.out.println("Index: " + index + " Status: " + status);
 
+        ShellyViewWrapper ShellyView= ShellyViewMap.get(index);
+
         if(status)
-            imageViews.get(index).setImage(bulbOn);
+            ShellyView.getView().setImage(bulbOn);
         else
-            imageViews.get(index).setImage(bulbOff);
+            ShellyView.getView().setImage(bulbOff);
     }
 
 

@@ -7,7 +7,6 @@ import shelly.ShellyEm3;
 import shelly.ShellyException;
 import shelly.ShellyTemp;
 
-import java.util.Arrays;
 
 public class StatusVBox extends VBox {
 
@@ -15,22 +14,28 @@ public class StatusVBox extends VBox {
     Label outTmp = new Label("0");
     Label radiatorTmp = new Label("0");
     Label boilerTmp = new Label("0");
-    ShellyEm3 shellyEm3;
-    ShellyTemp shellyTemp;
+    static ShellyEm3 shellyEm3;
+    static ShellyTemp shellyTemp;
     String[] temp = {"TEMP", "TEMP", "TEMP"};
-    int counter = 4;
+    int counter = 0;
+    static int restartCounter = 0;
 
-    public StatusVBox(double v)
+    public static int initShelly()
     {
-        super(v);
-
+        if(restartCounter++ >10)
+            return -1;
         try {
             shellyEm3 = new ShellyEm3("192.168.2.40", 0);
             shellyTemp = new ShellyTemp("192.168.2.41", 0);
         } catch (ShellyException e) {
-            throw new RuntimeException(e);
+            return 0;
         }
+        return 1;
+    }
 
+    public StatusVBox(double v)
+    {
+        super(v);
 
         this.setAlignment(Pos.TOP_CENTER);
         this.setLayoutX(1030);

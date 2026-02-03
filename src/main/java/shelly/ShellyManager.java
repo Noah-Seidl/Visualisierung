@@ -7,6 +7,7 @@ import javafx.util.Duration;
 
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -16,43 +17,61 @@ import java.util.List;
 public class ShellyManager extends Subject{
     List<ShellyDevice> shellys = new LinkedList<>();
     private Timeline timeline;
+    private static int restartCounter;
 
-    public ShellyManager(){
-        createShellyList();
-    }
-
-    public void createShellyList()
+    public int createShellyList()
     {
-        //Alle lichter Shellys werden initialisiert
-        try{
-            InputStream is = getClass().getResourceAsStream("/shellys.csv");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-            String line;
-            while((line = reader.readLine()) != null){
-                System.out.println("Line: " + line);
-                String[] helper = line.split(",");
-                ShellyDevice shelly =  ShellyFactory.autoDetect(helper[0],Integer.parseInt(helper[1]));
-                if(shelly != null) {
-                    shelly.addCoords(Double.parseDouble(helper[2]), Double.parseDouble(helper[3]));
-                    shellys.add(shelly);
-                }
+        if(restartCounter++ > 10)
+            return -1;
 
-                Thread.sleep(100);
-            }
-            reader.close();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        List<String> shellyList;
+        try {
+            shellyList = getShellyInfoCSV();
+        } catch (IOException e) {
+            return -1;
         }
 
+        for(String shelly : shellyList)
+        {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                System.out.println("Error Sleep" + e.getMessage());
+            }
+
+            String[] helper = shelly.split(",");
+            ShellyDevice newShelly = ShellyFactory.autoDetect(helper[0],Integer.parseInt(helper[1]));
+            if(newShelly == null)
+                return 0;
+
+            newShelly.addCoords(Double.parseDouble(helper[2]), Double.parseDouble(helper[3]));
+            shellys.add(newShelly);
+        }
+
+        return 1;
     }
 
-    public void addShelly(ShellyDevice shelly) {shellys.add(shelly);}
+    private List<String> getShellyInfoCSV() throws IOException {
+        List<String> shellyList = new LinkedList<>();
+        InputStream is = getClass().getResourceAsStream("/shellys.csv");
+        if(is == null)
+            throw new IOException("InputStream null");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+
+        String line;
+        while((line = reader.readLine()) != null){
+            shellyList.add(line);
+        }
+
+        reader.close();
+
+        return shellyList;
+    }
 
     public void startStatusCheck(){
         timeline = new Timeline(
-                new KeyFrame(Duration.seconds(shellys.size()), actionEvent -> {
-                    new Thread(this::updateStatus).start();
-                }));
+                new KeyFrame(Duration.seconds(shellys.size()), actionEvent -> new Thread(this::updateStatus).start())
+        );
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
 
@@ -61,7 +80,7 @@ public class ShellyManager extends Subject{
         timeline.stop();
     }
 
-
+    @SuppressWarnings("BusyWait")
     public void updateStatus() {
         List<Integer> indexList = new LinkedList<>();
         for (int index = 0; index < shellys.size() - 1; index++) {

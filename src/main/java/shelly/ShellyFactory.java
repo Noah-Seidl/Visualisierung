@@ -1,13 +1,10 @@
 package shelly;
 
 public class ShellyFactory {
-    public enum ShellyType{
-        PM2,LIGHT,RELAY
-    }
 
     public static ShellyDevice autoDetect(String ip, int channel)
     {
-        ShellyDevice shelly = null;
+        ShellyDevice shelly;
         try {
             shelly = new Shelly2PM(ip, channel);
             return shelly;
@@ -25,8 +22,5 @@ public class ShellyFactory {
 
         return null;
     }
-
-
-
 
 }

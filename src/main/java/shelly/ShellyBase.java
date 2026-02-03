@@ -14,6 +14,8 @@ public abstract class ShellyBase implements ShellyDevice {
     protected HttpRequest requestStatus;
     protected HttpRequest requestToggle;
     protected HttpClient client = HttpClient.newHttpClient();
+    private static int index = 0;
+    private final int id;
 
     protected ShellyBase(String ip, int channel) throws ShellyException{
         this.ip = ip;
@@ -21,6 +23,7 @@ public abstract class ShellyBase implements ShellyDevice {
         boolean test = this.tryShelly();
         if(!test)
             throw new WrongShellyType("");
+        id = index++;
     }
 
         private boolean tryShelly() {
@@ -67,15 +70,16 @@ public abstract class ShellyBase implements ShellyDevice {
 
     public boolean getStatus(){return status;}
 
-    public ShellyDevice addCoords(double x, double y)
+    public void addCoords(double x, double y)
     {
         this.x = x;
         this.y = y;
-        return this;
     }
 
     public double getX(){return x;}
     public double getY(){return y;}
 
-
+    public int getId() {
+        return id;
+    }
 }

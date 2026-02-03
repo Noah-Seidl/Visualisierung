@@ -20,8 +20,7 @@ public class ShellyEm3 extends ShellyBase{
             HttpResponse<String> response = client.send(requestStatus, HttpResponse.BodyHandlers.ofString());
             int index1 = response.body().indexOf("total_act_power\":") + 17;
             int index2 = response.body().indexOf(',', index1);
-            String helper = response.body().substring(index1,index2 - 1);
-            return helper;
+            return response.body().substring(index1,index2 - 1);
         }catch (Exception e){
             System.out.println("Fehler Response" + e.getMessage());
             return "Error Em3";

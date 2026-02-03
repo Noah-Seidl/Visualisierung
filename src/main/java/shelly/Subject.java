@@ -11,11 +11,6 @@ public abstract class Subject {
         observerList.add(o);
     }
 
-    protected void removeObserver(Observer o)
-    {
-        observerList.add(o);
-    }
-
     public void notifyO(List<Integer> index)
     {
         for (Observer observer : observerList) {

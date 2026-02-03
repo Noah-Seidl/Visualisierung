@@ -6,7 +6,4 @@ public class ShellyException extends Exception{
         super(message);
     }
 
-    public ShellyException(String message, Throwable cause) {
-        super(message, cause);
-    }
 }
