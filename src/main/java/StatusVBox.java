@@ -18,7 +18,7 @@ public class StatusVBox extends VBox {
     static ShellyTemp shellyTemp;
     String[] temp = {"TEMP", "TEMP", "TEMP"};
     String power = "0";
-    int counter = 0;
+    int counter = 10;
     static int restartCounter = 0;
 
     public static int initShelly()
