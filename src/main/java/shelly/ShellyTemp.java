@@ -19,22 +19,27 @@ public class ShellyTemp extends ShellyBase{
             HttpResponse<String> response = client.send(requestStatus, HttpResponse.BodyHandlers.ofString());
             int index1 = response.body().indexOf("\"tC\":") + 5;
             int index2 = response.body().indexOf(',', index1);
+
             String helper1 = response.body().substring(index1,index2);
+
             index1 = response.body().indexOf("\"tC\":", index2) + 5;
             index2 = response.body().indexOf(',', index1);
+
             String helper2 = response.body().substring(index1,index2);
+
             index1 = response.body().indexOf("\"tC\":", index2) + 5;
             index2 = response.body().indexOf(',', index1);
+
             String helper3 = response.body().substring(index1,index2);
+
             return new String[]{helper1, helper2, helper3};
         }catch (Exception e){
-            System.out.println("Fehler Response" + e.getMessage());
-            throw new ShellyException("TMP Sensor Fehler");
+            throw new ShellyException("TMP Sensor error");
         }
     }
 
     @Override
-    public Boolean status() {
+    public Boolean fetchStatus() {
         return null;
     }
 }

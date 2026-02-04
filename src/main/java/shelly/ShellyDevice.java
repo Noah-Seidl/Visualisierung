@@ -1,11 +1,11 @@
 package shelly;
 
 public interface ShellyDevice {
-    Boolean status();
-    Boolean toggle();
+    Boolean fetchStatus();
+    Boolean fetchToggle();
     boolean getStatus();
     double getX();
     double getY();
-    void addCoords(double x, double y);
+    void addCords(double x, double y);
     int getId();
 }

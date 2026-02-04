@@ -29,7 +29,7 @@ public class ShellyEm3 extends ShellyBase{
 
 
     @Override
-    public Boolean status() {
+    public Boolean fetchStatus() {
         return null;
     }
 }

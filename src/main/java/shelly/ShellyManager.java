@@ -4,8 +4,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.util.Duration;
-
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class ShellyManager extends Subject{
-    List<ShellyDevice> shellys = new LinkedList<>();
+    List<ShellyDevice> shellyDeviceList = new LinkedList<>();
     private Timeline timeline;
     private static int restartCounter;
 
@@ -24,14 +22,14 @@ public class ShellyManager extends Subject{
         if(restartCounter++ > 10)
             return -1;
 
-        List<String> shellyList;
+        List<String[]> shellyList;
         try {
             shellyList = getShellyInfoCSV();
         } catch (IOException e) {
             return -1;
         }
 
-        for(String shelly : shellyList)
+        for(String[] shellyInfo : shellyList)
         {
             try {
                 Thread.sleep(100);
@@ -39,75 +37,77 @@ public class ShellyManager extends Subject{
                 System.out.println("Error Sleep" + e.getMessage());
             }
 
-            String[] helper = shelly.split(",");
-            ShellyDevice newShelly = ShellyFactory.autoDetect(helper[0],Integer.parseInt(helper[1]));
+            ShellyDevice newShelly = ShellyFactory.autoDetect(shellyInfo[0],Integer.parseInt(shellyInfo[1]));
+
             if(newShelly == null)
                 return 0;
 
-            newShelly.addCoords(Double.parseDouble(helper[2]), Double.parseDouble(helper[3]));
-            shellys.add(newShelly);
+            newShelly.addCords(Double.parseDouble(shellyInfo[2]), Double.parseDouble(shellyInfo[3]));
+            shellyDeviceList.add(newShelly);
         }
 
         return 1;
     }
 
-    private List<String> getShellyInfoCSV() throws IOException {
-        List<String> shellyList = new LinkedList<>();
+
+    private List<String[]> getShellyInfoCSV() throws IOException {
+        List<String[]> shellyList = new LinkedList<>();
+
         InputStream is = getClass().getResourceAsStream("/shellys.csv");
+
         if(is == null)
             throw new IOException("InputStream null");
+
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
 
         String line;
         while((line = reader.readLine()) != null){
-            shellyList.add(line);
+            shellyList.add(line.split(","));
         }
 
         reader.close();
-
         return shellyList;
     }
 
+
     public void startStatusCheck(){
         timeline = new Timeline(
-                new KeyFrame(Duration.seconds(shellys.size()), actionEvent -> new Thread(this::updateStatus).start())
+                new KeyFrame(Duration.seconds(shellyDeviceList.size()), actionEvent -> new Thread(this::updateStatus).start())
         );
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
 
     }
+
+
     public void stopStatusCheck(){
         timeline.stop();
     }
 
-    @SuppressWarnings("BusyWait")
+
     public void updateStatus() {
         List<Integer> indexList = new LinkedList<>();
-        for (int index = 0; index < shellys.size() - 1; index++) {
 
-
-            ShellyDevice shelly = shellys.get(index);
+        for (ShellyDevice shelly : shellyDeviceList) {
             boolean oldStatus = shelly.getStatus();
-            boolean newStatus = shelly.status();
-
-            System.out.println("Shelly Status: " + oldStatus);
+            boolean newStatus = shelly.fetchStatus();
 
             if (oldStatus != newStatus)
-                indexList.add(index);
+                indexList.add(shelly.getId());
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                System.out.println("Sleep fehler");
+                System.out.println("Sleep Error");
             }
-
         }
-        Platform.runLater(() -> notifyO(indexList));
+
+        if(!indexList.isEmpty())
+            Platform.runLater(() -> notifyO(indexList));
     }
+
 
     public List<ShellyDevice> getList()
     {
-        return shellys;
+        return shellyDeviceList;
     }
-
-
 }

@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 
-public class HelloFX extends Application implements Observer {
+public class MainFX extends Application implements Observer {
     List<ShellyDevice> shellys;
     Map<Integer, ShellyViewWrapper> ShellyViewMap;
 
@@ -36,17 +36,19 @@ public class HelloFX extends Application implements Observer {
     @SuppressWarnings("BusyWait")
     public void init() throws Exception {
         super.init();
+
         manager = new ShellyManager();
+
         int status;
         while ((status = manager.createShellyList()) == 0){Thread.sleep(500);}
 
         if(status == -1)
-            throw new Exception("Manager Fehler");
+            throw new Exception("Manager Error");
 
         while((status = StatusVBox.initShelly()) == 0){Thread.sleep(500);}
 
         if(status == -1)
-            throw new Exception("Temp oder Em3 Fehler");
+            throw new Exception("Temp or Em3 Error");
 
         manager.registerObserver(this);
         manager.startStatusCheck();
@@ -56,11 +58,11 @@ public class HelloFX extends Application implements Observer {
 
     @Override
     public void start(Stage stage) {
-        //Lichter icons
+        //Light icons
         bulbOff = new Image("/bulbOff.png", true);
         bulbOn = new Image("/bulbOn.png", true);
 
-        //Background Setzen
+        //Set Background
         Image backgroundImage = new Image("/HausVisEnhanced.jpg", true);
         ImageView backgroundView = new ImageView(backgroundImage);
         backgroundView.setPreserveRatio(true);
@@ -70,7 +72,7 @@ public class HelloFX extends Application implements Observer {
 
 
 
-        //Alle ShellyDevices Zeichnen
+        //Draw all ShellyDevices
         for (int i = 0; i < shellys.size(); i++) {
             ShellyDevice shelly = shellys.get(i);
             ImageView iView = getImageView(shelly, i);
@@ -83,14 +85,14 @@ public class HelloFX extends Application implements Observer {
         //Labels
         clock.setFont(new Font(35));
         clock.setLayoutX(350);
-        clock.setLayoutY(-8);
+        clock.setLayoutY(-4);
 
         statusVBox = new StatusVBox(5);
 
-        //jede Sekunde Update
+        //Update every second
         Timeline timeline = new Timeline(
                 new KeyFrame(Duration.seconds(1), (actionEvent) -> {
-                    setClockLabel(); //Uhrzeit aktualisierung
+                    setClockLabel();
                     statusVBox.update();
                 })
         );
@@ -114,6 +116,9 @@ public class HelloFX extends Application implements Observer {
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
 
+        stage.setTitle("Visualisierung");
+        //stage.setAlwaysOnTop(true);
+        stage.setResizable(false);
         stage.show();
         stage.setFullScreen(true);
     }
@@ -123,11 +128,14 @@ public class HelloFX extends Application implements Observer {
         iView.setX(shelly.getX());
         iView.setY(shelly.getY());
         iView.setImage(bulbOff);
+        iView.setPreserveRatio(true);
+        iView.setFitHeight(60);
+        iView.setFitWidth(60);
 
         iView.setOnMouseClicked((a)->{
             System.out.println("Toggle" + i);
             new Thread(()->{
-                boolean status = shelly.toggle();
+                boolean status = shelly.fetchToggle();
                 Platform.runLater(()->updateSingle(i, status));
             }).start();
         });
@@ -151,14 +159,14 @@ public class HelloFX extends Application implements Observer {
     {
         LocalDateTime time = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd. MMM yyyy HH:mm:ss");
-        String timestr = time.format(formatter);
-        clock.setText(timestr);
+        String formatted = time.format(formatter);
+        clock.setText(formatted);
     }
 
 
     @Override
     public void update(List<Integer> index) {
-        System.out.println("Ein shelly status hat sich geändert Shelly geändert: " + index);
+        System.out.println("An Shelly has changed it status " + index);
         for (int i  : index)
         {
             ShellyViewWrapper ShellyView= ShellyViewMap.get(i);

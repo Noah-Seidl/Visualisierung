@@ -77,7 +77,6 @@ public class StatusVBox extends VBox {
         try {
             temp = shellyTemp.getTemp();
         } catch (ShellyException e) {
-            System.out.println("Fehler in tmp sensor");
             outTmp.setTextFill(Color.RED);
             radiatorTmp.setTextFill(Color.RED);
             boilerTmp.setTextFill(Color.RED);
