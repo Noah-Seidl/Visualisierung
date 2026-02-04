@@ -19,8 +19,7 @@ public class ShellyManager extends Subject{
 
     public int createShellyList()
     {
-        if(restartCounter++ > 10)
-            return -1;
+        restartCounter++;
 
         List<String[]> shellyList;
         try {
@@ -39,11 +38,13 @@ public class ShellyManager extends Subject{
 
             ShellyDevice newShelly = ShellyFactory.autoDetect(shellyInfo[0],Integer.parseInt(shellyInfo[1]));
 
-            if(newShelly == null)
+            if(newShelly == null && restartCounter < 10)
                 return 0;
 
-            newShelly.addCords(Double.parseDouble(shellyInfo[2]), Double.parseDouble(shellyInfo[3]));
-            shellyDeviceList.add(newShelly);
+            if(newShelly != null) {
+                newShelly.addCords(Double.parseDouble(shellyInfo[2]), Double.parseDouble(shellyInfo[3]));
+                shellyDeviceList.add(newShelly);
+            }
         }
 
         return 1;

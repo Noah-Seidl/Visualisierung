@@ -48,7 +48,7 @@ public class MainFX extends Application implements Observer {
         while((status = StatusVBox.initShelly()) == 0){Thread.sleep(500);}
 
         if(status == -1)
-            throw new Exception("Temp or Em3 Error");
+            throw new Exception("Em3 Error");
 
         manager.registerObserver(this);
         manager.startStatusCheck();

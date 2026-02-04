@@ -14,7 +14,7 @@ public class ShellyEm3 extends ShellyBase{
         return "http://" + ip + "/rpc/EM.GetStatus?id=0";
     }
 
-    public String getPower(){
+    public String getPower() throws ShellyException {
 
         try {
             HttpResponse<String> response = client.send(requestStatus, HttpResponse.BodyHandlers.ofString());
@@ -22,8 +22,7 @@ public class ShellyEm3 extends ShellyBase{
             int index2 = response.body().indexOf(',', index1);
             return response.body().substring(index1,index2 - 1);
         }catch (Exception e){
-            System.out.println("Fehler Response" + e.getMessage());
-            return "Error Em3";
+            throw new ShellyException("TMP Sensor error");
         }
     }
 

@@ -17,6 +17,7 @@ public class StatusVBox extends VBox {
     static ShellyEm3 shellyEm3;
     static ShellyTemp shellyTemp;
     String[] temp = {"TEMP", "TEMP", "TEMP"};
+    String power = "0";
     int counter = 0;
     static int restartCounter = 0;
 
@@ -71,18 +72,21 @@ public class StatusVBox extends VBox {
         outTmp.setTextFill(Color.BLACK);
         radiatorTmp.setTextFill(Color.BLACK);
         boilerTmp.setTextFill(Color.BLACK);
+        powerLabel.setTextFill(Color.BLACK);
 
-        String power = shellyEm3.getPower();
+        try {
+            power = shellyEm3.getPower();
+        } catch (Exception e) {
+            powerLabel.setTextFill(Color.RED);
+        }
 
         try {
             temp = shellyTemp.getTemp();
-        } catch (ShellyException e) {
+        } catch (Exception e) {
             outTmp.setTextFill(Color.RED);
             radiatorTmp.setTextFill(Color.RED);
             boilerTmp.setTextFill(Color.RED);
         }
-
-
 
         powerLabel.setText(power + "W");
         outTmp.setText(temp[0] + "°C");
