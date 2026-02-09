@@ -26,8 +26,8 @@ public class StatusVBox extends VBox {
         if(restartCounter++ >10)
             return -1;
         try {
-            shellyEm3 = new ShellyEm3("192.168.2.40", 0);
-            shellyTemp = new ShellyTemp("192.168.2.41", 0);
+            shellyEm3 = ShellyEm3.getInstance();
+            shellyTemp = ShellyTemp.getInstance();
         } catch (ShellyException e) {
             return 0;
         }
@@ -66,7 +66,7 @@ public class StatusVBox extends VBox {
 
     public void update()
     {
-        if(counter++ < 5)
+        if(counter++ < 10)
             return;
 
         outTmp.setTextFill(Color.BLACK);

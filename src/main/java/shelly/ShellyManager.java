@@ -16,6 +16,8 @@ public class ShellyManager extends Subject{
     List<ShellyDevice> shellyDeviceList = new LinkedList<>();
     private Timeline timeline;
     private static int restartCounter;
+    private ShellyEm3 shellyEm3;
+    private ShellyTemp shellyTemp;
 
     public int createShellyList()
     {
@@ -45,6 +47,20 @@ public class ShellyManager extends Subject{
                 newShelly.addCords(Double.parseDouble(shellyInfo[2]), Double.parseDouble(shellyInfo[3]));
                 shellyDeviceList.add(newShelly);
             }
+        }
+
+        try {
+            shellyEm3 = ShellyEm3.getInstance();
+        } catch (ShellyException e) {
+            System.out.println("Shelly3 failed");
+            return 0;
+        }
+
+        try {
+            shellyTemp = ShellyTemp.getInstance();
+        } catch (ShellyException e) {
+            System.out.println("Shelly temp failed");
+            return 0;
         }
 
         return 1;
@@ -100,6 +116,24 @@ public class ShellyManager extends Subject{
             } catch (InterruptedException e) {
                 System.out.println("Sleep Error");
             }
+        }
+
+        try {
+            shellyEm3.fetchPower();
+        } catch (ShellyException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            System.out.println("Sleep Error");
+        }
+
+        try {
+            shellyTemp.fetchTmp();
+        } catch (ShellyException e) {
+            throw new RuntimeException(e);
         }
 
         if(!indexList.isEmpty())
