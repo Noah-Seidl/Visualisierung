@@ -1,5 +1,5 @@
 
-package Shelly.ShellyJSONs;
+package Shelly.Shelly2PMJSON;
 
 import java.util.List;
 

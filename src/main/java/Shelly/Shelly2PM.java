@@ -1,42 +1,40 @@
 package Shelly;
 
-import Shelly.ShellyJSONs.Shelly2PMJSON;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import shelly.ShellyBase;
-
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.http.HttpResponse;
+import Shelly.Shelly2PMJSON.Shelly2PMSTATUSJSON;
+import Shelly.Shelly2PMJSON.Shelly2PMTOGGLEJSON;
 
 public class Shelly2PM extends ShellyBase {
 
-    protected Shelly2PM(String ip, int channel) throws Exception {
+
+    protected Shelly2PM(String ip, int channel) {
         super(ip, channel);
     }
-
 
     @Override
     protected String getStatusUrl() {
         return "http://" + ip +"/rpc/Switch.GetStatus?id=" + channel;
     }
 
+    @Override
+    protected Boolean queryStatus(String response) {
+        Shelly2PMSTATUSJSON shellyJson;
+        try {
+            shellyJson = mapper.readValue(response, Shelly2PMSTATUSJSON.class);
+            return shellyJson.output;
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
 
     @Override
-    public Boolean fetchStatus() {
-
-        ObjectMapper mapper = new ObjectMapper();
-        Shelly2PMJSON shellyJson;
+    public Boolean queryToggle(String response) {
+        Shelly2PMTOGGLEJSON shellyJson;
         try {
-            shellyJson = mapper.readValue(new URL(getStatusUrl()), Shelly2PMJSON.class);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            shellyJson = mapper.readValue(response, Shelly2PMTOGGLEJSON.class);
+            return shellyJson.ison;
+        } catch (Exception ignored) {
         }
-
-        System.out.println("Status: " + shellyJson.output + " Power: " + shellyJson.apower +  " Temp: " + shellyJson.temperature.tC);
-
-
-        return true;
+        return null;
     }
 
 }

@@ -1,46 +1,43 @@
 package Shelly;
 
-import shelly.ShellyDevice;
-import shelly.ShellyException;
-import shelly.WrongShellyType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
-public abstract class ShellyBase implements ShellyInterface {
-    protected double x,y;
-
-    protected Boolean status = false;
+public abstract class ShellyBase{
+    //instance variables to get Status and toggling of shellys
+    protected Boolean status = null;
+    protected Double power = null;
     protected String ip;
     protected int channel;
-
+    //Requests
+    protected ObjectMapper mapper;
     protected HttpRequest requestStatus;
     protected HttpRequest requestToggle;
     protected HttpClient client = HttpClient.newHttpClient();
-
+    //index to identify shelly
     private static int index = 0;
     private final int id;
+    //for shelly buttons on vis
+    protected double x,y;
 
-
-    protected ShellyBase(String ip, int channel) throws ShellyException {
+    protected ShellyBase(String ip, int channel) {
         this.ip = ip;
         this.channel = channel;
-        if(!this.tryShelly())
-            throw new WrongShellyType("Wrong Shelly type in ShellyBase Class");
+        createRequests();
         id = index++;
+        mapper = new ObjectMapper();
     }
 
 
     //creates and tries shelly response;
-    private boolean tryShelly() {
+    public boolean tryShelly() {
         try{
-            this.createRequests();
-
-            HttpResponse<String> response = this.client.send(requestStatus, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<Void> response = this.client.send(requestStatus, HttpResponse.BodyHandlers.discarding());
 
             if(response.statusCode() != 200)
                 return false;
@@ -54,43 +51,61 @@ public abstract class ShellyBase implements ShellyInterface {
     }
 
 
-    private void createRequests() throws URISyntaxException {
-        requestStatus = HttpRequest.newBuilder(new URI(getStatusUrl()))
-                .timeout(Duration.ofSeconds(1))
-                .build();
-
-        requestToggle = HttpRequest.newBuilder(new URI(getToggleUrl()))
-                .timeout(Duration.ofSeconds(1))
-                .build();
-    }
-
-
-    protected abstract String getStatusUrl();
-    public abstract Boolean fetchStatus();
-
-    protected String getToggleUrl() {
-        return "http://" + ip + "/relay/" + channel + "?turn=toggle";
-    }
-
-
-
-
-    @Override
-    public Boolean fetchToggle() {
+    private void createRequests() {
         try {
-            HttpResponse<String> response = client.send(requestToggle, HttpResponse.BodyHandlers.ofString());
-            status = response.body().contains("\"ison\": true,") || response.body().contains("\"ison\":true,");
+            requestStatus = HttpRequest.newBuilder(new URI(getStatusUrl()))
+                    .timeout(Duration.ofSeconds(1))
+                    .build();
+
+            requestToggle = HttpRequest.newBuilder(new URI(getToggleUrl()))
+                    .timeout(Duration.ofSeconds(1))
+                    .build();
+        } catch (Exception e) {
+            System.out.println("Error URLS in createRequests");
+        }
+    }
+
+    //Status
+    protected abstract String getStatusUrl();
+
+    protected Boolean fetchStatus(){
+        try {
+            String response = client.send(requestStatus, HttpResponse.BodyHandlers.ofString()).body();
+            status = queryStatus(response);
             return status;
         } catch (Exception e) {
             System.out.println("Error in Shelly toggle: " + e.getMessage());
         }
-        return false;
+        return null;
     }
 
+    protected abstract Boolean queryStatus(String response);
 
-    public boolean getStatus(){return status;}
+    public Boolean getStatus(){return status;}
+
+    //Toggle
+    protected String getToggleUrl() {return "http://" + ip + "/relay/" + channel + "?turn=toggle";}
+
+    protected Boolean fetchToggle() {
+        try {
+            String response = client.send(requestToggle, HttpResponse.BodyHandlers.ofString()).body();
+            status = queryToggle(response);
+            return status;
+        } catch (Exception e) {
+            System.out.println("Error in Shelly toggle: " + e.getMessage());
+        }
+
+        return null;
+    }
+
+    public abstract Boolean queryToggle(String response);
+
+    //extra shelly methods:
+
+    public Double getPower(){return power;}
 
 
+    //Buttons JavaFX
     public void addCords(double x, double y)
     {
         this.x = x;
