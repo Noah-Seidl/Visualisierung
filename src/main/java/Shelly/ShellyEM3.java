@@ -50,4 +50,9 @@ public class ShellyEM3 extends ShellyBase{
         return null;
     }
 
+
+    public boolean isEm3()
+    {
+        return true;
+    }
 }

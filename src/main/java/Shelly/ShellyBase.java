@@ -63,11 +63,11 @@ public abstract class ShellyBase{
     private void createRequests() {
         try {
             requestStatus = HttpRequest.newBuilder(new URI(getStatusUrl()))
-                    .timeout(Duration.ofSeconds(1))
+                    .timeout(Duration.ofSeconds(2))
                     .build();
 
             requestToggle = HttpRequest.newBuilder(new URI(getToggleUrl()))
-                    .timeout(Duration.ofSeconds(1))
+                    .timeout(Duration.ofSeconds(2))
                     .build();
         } catch (Exception e) {
             System.out.println("Error URLS in createRequests");
@@ -78,7 +78,7 @@ public abstract class ShellyBase{
     protected abstract String getStatusUrl();
 
     protected Boolean fetchStatus(){
-        System.out.println("Aufgeruzfen");
+        System.out.println("Fetching IP: " + ip);
         try {
             String response = client.send(requestStatus, HttpResponse.BodyHandlers.ofString()).body();
             status = queryStatus(response);
@@ -155,13 +155,27 @@ public abstract class ShellyBase{
 
     public void startPoller(double interval)
     {
-    scheduler.scheduleAtFixedRate(this::fetchStatus,0,(long)interval, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(this::fetchStatus,0,(long)interval, TimeUnit.SECONDS);
     }
 
     public void stopPoller()
     {
-     scheduler.shutdown();
+        scheduler.shutdown();
     }
 
+    public boolean isEm3()
+    {
+        return false;
+    }
+
+    public boolean isTemp()
+    {
+        return false;
+    }
+
+    public String toString()
+    {
+        return "IP Address: " + ip + " Channel: " + channel + " type: " + (isEm3() ? "Em3" : "") + (isTemp() ? "Temp" : "") + (!isTemp() & !isEm3() ? "Normal":"");
+    }
 
 }

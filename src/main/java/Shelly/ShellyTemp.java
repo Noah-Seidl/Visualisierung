@@ -71,4 +71,11 @@ public class ShellyTemp extends ShellyBase{
         }
         return null;
     }
+
+    public boolean isTemp()
+    {
+        return true;
+    }
+
+
 }

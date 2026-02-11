@@ -1,4 +1,4 @@
-import shelly.ShellyDevice;
+import oldshelly.ShellyDevice;
 import javafx.scene.image.ImageView;
 
 

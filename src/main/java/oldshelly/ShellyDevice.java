@@ -1,4 +1,4 @@
-package shelly;
+package oldshelly;
 
 public interface ShellyDevice {
     Boolean fetchStatus();

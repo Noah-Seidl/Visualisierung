@@ -1,8 +1,5 @@
-package shelly;
+package oldshelly;
 
-import netscape.javascript.JSObject;
-
-import java.io.IOException;
 import java.net.http.HttpResponse;
 
 public class Shelly2PM extends ShellyBase{

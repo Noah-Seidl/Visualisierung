@@ -1,4 +1,4 @@
-package shelly;
+package oldshelly;
 
 import java.net.URI;
 import java.net.URISyntaxException;

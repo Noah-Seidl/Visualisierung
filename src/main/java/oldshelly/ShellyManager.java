@@ -1,4 +1,4 @@
-package shelly;
+package oldshelly;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;

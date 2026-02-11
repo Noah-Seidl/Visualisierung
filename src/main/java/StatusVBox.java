@@ -3,9 +3,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import shelly.ShellyEm3;
-import shelly.ShellyException;
-import shelly.ShellyTemp;
+import oldshelly.ShellyEm3;
+import oldshelly.ShellyException;
+import oldshelly.ShellyTemp;
 
 
 public class StatusVBox extends VBox {

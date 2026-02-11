@@ -1,4 +1,4 @@
-package shelly;
+package oldshelly;
 
 public class WrongShellyType extends ShellyException {
     public WrongShellyType(String message) {
