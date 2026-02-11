@@ -1,4 +1,8 @@
-package shelly;
+package Shelly;
+
+import shelly.ShellyDevice;
+import shelly.ShellyException;
+import shelly.WrongShellyType;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -7,19 +11,22 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
-public abstract class ShellyBase implements ShellyDevice {
+public abstract class ShellyBase implements ShellyInterface {
     protected double x,y;
+
     protected Boolean status = false;
     protected String ip;
     protected int channel;
+
     protected HttpRequest requestStatus;
     protected HttpRequest requestToggle;
     protected HttpClient client = HttpClient.newHttpClient();
+
     private static int index = 0;
     private final int id;
 
 
-    protected ShellyBase(String ip, int channel) throws ShellyException{
+    protected ShellyBase(String ip, int channel) throws ShellyException {
         this.ip = ip;
         this.channel = channel;
         if(!this.tryShelly())
@@ -64,6 +71,8 @@ public abstract class ShellyBase implements ShellyDevice {
     protected String getToggleUrl() {
         return "http://" + ip + "/relay/" + channel + "?turn=toggle";
     }
+
+
 
 
     @Override

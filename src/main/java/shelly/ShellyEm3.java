@@ -17,7 +17,6 @@ public class ShellyEm3 extends ShellyBase{
     }
 
     public void fetchPower() throws ShellyException {
-
         try {
             HttpResponse<String> response = client.send(requestStatus, HttpResponse.BodyHandlers.ofString());
             int index1 = response.body().indexOf("total_act_power\":") + 17;
