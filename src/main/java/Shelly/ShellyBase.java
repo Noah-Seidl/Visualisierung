@@ -1,16 +1,16 @@
 package Shelly;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public abstract class ShellyBase{
     //instance variables to get Status and toggling of shellys
@@ -30,7 +30,9 @@ public abstract class ShellyBase{
     //for shelly buttons on vis
     protected double x,y;
     //for autodetect
-    private static List<Class<? extends ShellyBase>> shellyTypes = Arrays.asList(ShellyTemp.class, Shelly2PM.class, ShellyRelay.class, ShellyLight.class, ShellyEM3.class);
+    private static final List<Class<? extends ShellyBase>> shellyTypes = Arrays.asList(ShellyTemp.class, Shelly2PM.class, ShellyRelay.class, ShellyLight.class, ShellyEM3.class);
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
 
     protected ShellyBase(String ip, String channel) {
         this.ip = ip;
@@ -76,6 +78,7 @@ public abstract class ShellyBase{
     protected abstract String getStatusUrl();
 
     protected Boolean fetchStatus(){
+        System.out.println("Aufgeruzfen");
         try {
             String response = client.send(requestStatus, HttpResponse.BodyHandlers.ofString()).body();
             status = queryStatus(response);
@@ -150,12 +153,15 @@ public abstract class ShellyBase{
         return null;
     }
 
-
-    public List<Class<? extends ShellyBase>> getShellyTypes() {
-        return shellyTypes;
+    public void startPoller(double interval)
+    {
+    scheduler.scheduleAtFixedRate(this::fetchStatus,0,(long)interval, TimeUnit.SECONDS);
     }
 
-    public void setShellyTypes(List<Class<? extends ShellyBase>> shellyTypes) {
-        this.shellyTypes = shellyTypes;
+    public void stopPoller()
+    {
+     scheduler.shutdown();
     }
+
+
 }

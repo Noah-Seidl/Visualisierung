@@ -8,10 +8,31 @@ public class testShelly {
     public static void main(String[] args) {
         ShellyBase shelly;
 
-        shelly = ShellyBase.autodetectShelly("192.168.2.41", "0");
+        shelly = ShellyBase.autodetectShelly("192.168.2.40", "0");
 
-        System.out.println("Shelly class: " + shelly.getClass().getName());
+        assert shelly != null;
+        shelly.startPoller(5.0);
+        shelly.fetchStatus();
 
+
+        System.out.println("Power: " + shelly.getPower());
+
+        try {
+            Thread.sleep((long) 6000.0);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println("Power: " + shelly.getPower());
+
+        try {
+            Thread.sleep((long) 6000.0);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println("Power: " + shelly.getPower());
+
+
+        shelly.stopPoller();
     }
 }
 
