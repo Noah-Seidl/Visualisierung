@@ -6,7 +6,7 @@ import Shelly.Shelly2PMJSON.Shelly2PMTOGGLEJSON;
 public class Shelly2PM extends ShellyBase {
 
 
-    protected Shelly2PM(String ip, int channel) {
+    protected Shelly2PM(String ip, String channel) {
         super(ip, channel);
     }
 

@@ -5,7 +5,7 @@ import Shelly.ShellyRELAYJSON.ShellyRELAYSTATUSJSON;
 import Shelly.ShellyRELAYJSON.ShellyRELAYTOGGLEJSON;
 
 public class ShellyRelay extends ShellyBase{
-    protected ShellyRelay(String ip, int channel) {
+    protected ShellyRelay(String ip, String channel) {
         super(ip, channel);
     }
 

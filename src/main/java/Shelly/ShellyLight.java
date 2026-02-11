@@ -10,7 +10,7 @@ public class ShellyLight extends ShellyBase{
     ShellyLIGHTTOGGLEJSON shellyToggleJson;
     ShellyLIGHTSTATUSJSON shellyStatusJson;
 
-    protected ShellyLight(String ip, int channel) {
+    protected ShellyLight(String ip, String channel) {
         super(ip, channel);
     }
 
@@ -24,7 +24,7 @@ public class ShellyLight extends ShellyBase{
 
             shellyStatusJson = mapper.readValue(response.body(), ShellyLIGHTSTATUSJSON.class);
 
-            if(shellyStatusJson.lights.get(channel).ison == null)
+            if(shellyStatusJson.lights.get(0).ison == null)
                 return false;
 
         }catch (Exception e){
@@ -52,7 +52,7 @@ public class ShellyLight extends ShellyBase{
     protected Boolean queryStatus(String response) {
         try {
             shellyStatusJson = mapper.readValue(response, ShellyLIGHTSTATUSJSON.class);
-            return shellyStatusJson.lights.get(channel).ison;
+            return shellyStatusJson.lights.get(0).ison;
         } catch (Exception ignored) {
         }
         return null;

@@ -6,7 +6,7 @@ import Shelly.ShellyEM3STATUSJSON.ShellyEM3STATUSJSON;
 import java.net.http.HttpResponse;
 
 public class ShellyEM3 extends ShellyBase{
-    protected ShellyEM3(String ip, int channel) {
+    protected ShellyEM3(String ip, String channel) {
         super(ip, channel);
     }
 
