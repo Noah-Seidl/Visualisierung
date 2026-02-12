@@ -2,6 +2,7 @@
 package Shelly.Shelly2PMJSON;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -19,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "ret_aenergy",
     "temperature"
 })
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Shelly2PMSTATUSJSON {
 
     @JsonProperty("id")

@@ -175,7 +175,7 @@ public abstract class ShellyBase{
 
     public String toString()
     {
-        return "IP Address: " + ip + " Channel: " + channel + " type: " + (isEm3() ? "Em3" : "") + (isTemp() ? "Temp" : "") + (!isTemp() & !isEm3() ? "Normal":"");
+        return "IP Address: " + ip + " Channel: " + channel + " type: " + (isEm3() ? "Em3" : "") + (isTemp() ? "Temp" : "") + (!isTemp() & !isEm3() ? "Normal":"") + " Status: " + getStatus();
     }
 
 }

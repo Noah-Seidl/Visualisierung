@@ -8,9 +8,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class ShellyModel {
-    private Map<Integer, ShellyBase> lightMap = new HashMap<>();
-    private Map<Integer, ShellyBase> em3Map = new HashMap<>();
-    private Map<Integer, ShellyBase> tempMap = new HashMap<>();
+    private Map<Integer, ShellyBase> shellyMap = new HashMap<>();
+    private List<Integer> em3IDs = new LinkedList<>();
+    private List<Integer> tempIDs = new LinkedList<>();
+
 
 
     public boolean addShelly(ShellyBase shelly)
@@ -19,24 +20,22 @@ public class ShellyModel {
             return false;
 
         int id = shelly.getId();
+
         if (shelly.isEm3())
-            em3Map.put(id, shelly);
+            em3IDs.add(id);
 
         if (shelly.isTemp())
-            tempMap.put(id, shelly);
+            tempIDs.add(id);
 
-        lightMap.put(id, shelly);
+        shellyMap.put(id, shelly);
         return true;
     }
 
 
     public void startPolling()
     {
-        int size = lightMap.size() + em3Map.size() + tempMap.size();
-
-        loopStarter(lightMap.values(), size);
-        loopStarter(em3Map.values(),size);
-        loopStarter(tempMap.values(), size);
+        int size = shellyMap.size();
+        loopStarter(shellyMap.values(), size);
     }
 
 
@@ -52,7 +51,7 @@ public class ShellyModel {
             }).start();
 
             try {
-                Thread.sleep(1000);
+                Thread.sleep(500);
             } catch (InterruptedException ignored) {}
 
         }
@@ -61,9 +60,7 @@ public class ShellyModel {
 
     public void stopPolling()
     {
-        loopStoper(lightMap.values());
-        loopStoper(em3Map.values());
-        loopStoper(tempMap.values());
+        loopStoper(shellyMap.values());
     }
 
 
@@ -94,14 +91,34 @@ public class ShellyModel {
         return shellyList;
     }
 
-    public void makeShellyMaps() throws Exception {
-        List<String[]> csvList = getShellyInfoCSV();
+    public void makeShellyMaps() {
+        List<String[]> csvList = null;
+        try {
+            csvList = getShellyInfoCSV();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        ShellyBase shelly;
+        int counterRetries = 0;
 
         for (String[] csvShelly : csvList) {
-            ShellyBase shelly = ShellyBase.autodetectShelly(csvShelly[0], csvShelly[1]);
 
-            if(shelly == null)
-                throw new Exception("Error with shelly autodetect");
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            counterRetries = 0;
+            shelly = null;
+            while (shelly == null && counterRetries < 5) {
+                shelly = ShellyBase.autodetectShelly(csvShelly[0], csvShelly[1]);
+                counterRetries++;
+            }
+
+            if(shelly == null) {
+                System.out.println("Error with shelly autodetect " + csvShelly[0] + " retries; " + counterRetries);
+                continue;
+            }
 
             shelly.addCords(Double.parseDouble(csvShelly[2]),Double.parseDouble(csvShelly[3]));
 
@@ -110,18 +127,18 @@ public class ShellyModel {
     }
 
 
-    public Map<Integer, ShellyBase> getLightMap()
+    public Map<Integer, ShellyBase> getShellyMap()
     {
-        return lightMap;
+        return shellyMap;
     }
 
-    public Map<Integer, ShellyBase> getEm3Map()
+    public List<Integer> getEm3IDs()
     {
-        return em3Map;
+        return em3IDs;
     }
 
-    public Map<Integer, ShellyBase> getTempMap()
+    public List<Integer> getTempIDs()
     {
-        return tempMap;
+        return tempIDs;
     }
 }

@@ -4,6 +4,8 @@ import java.util.Map;
 
 public class testShellyModel {
     public static void main(String[] args) {
+
+
         ShellyModel model = new ShellyModel();
 
         try {
@@ -14,9 +16,7 @@ public class testShellyModel {
 
         model.startPolling();
 
-        Map<Integer, ShellyBase> shellys = model.getLightMap();
-        Map<Integer, ShellyBase> em3s = model.getEm3Map();
-        Map<Integer, ShellyBase> temps = model.getTempMap();
+        Map<Integer, ShellyBase> shellys = model.getShellyMap();
 
         try {
             Thread.sleep(30 * 1000);
@@ -26,9 +26,6 @@ public class testShellyModel {
 
         shellys.forEach((key,shelly) ->System.out.println(shelly.toString()));
 
-        em3s.forEach((key,shelly) ->System.out.println(shelly.toString()));
-
-        temps.forEach((key,shelly) ->System.out.println(shelly.toString()));
-
     }
+
 }
