@@ -1,6 +1,8 @@
 package Shelly;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.application.Platform;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -11,12 +13,13 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public abstract class ShellyBase{
+public abstract class ShellyBase extends SubjectShelly{
     //instance variables to get Status and toggling of shellys
-    protected Boolean status = null;
-    protected Double power = null;
-    protected Double[] temp = null;
+    protected volatile Boolean status = null;
+    protected volatile Double power = null;
+    protected volatile Double[] temp = null;
     protected String ip;
     protected String channel;
     //Requests
@@ -25,7 +28,7 @@ public abstract class ShellyBase{
     protected HttpRequest requestToggle;
     protected HttpClient client = HttpClient.newHttpClient();
     //index to identify shelly
-    private static int index = 0;
+    private static final AtomicInteger index = new AtomicInteger(0);
     private final int id;
     //for shelly buttons on vis
     protected double x,y;
@@ -38,7 +41,7 @@ public abstract class ShellyBase{
         this.ip = ip;
         this.channel = channel;
         createRequests();
-        id = index++;
+        id = index.getAndIncrement();
         mapper = new ObjectMapper();
     }
 
@@ -78,10 +81,14 @@ public abstract class ShellyBase{
     protected abstract String getStatusUrl();
 
     protected Boolean fetchStatus(){
-        System.out.println("Fetching IP: " + ip);
+        Boolean oldStatus = status;
         try {
             String response = client.send(requestStatus, HttpResponse.BodyHandlers.ofString()).body();
             status = queryStatus(response);
+
+            if(oldStatus != status || status == null)
+                Platform.runLater(()->notifyO(id));
+
             return status;
         } catch (Exception e) {
             System.out.println("Error in Shelly toggle: " + e.getMessage());
@@ -96,7 +103,7 @@ public abstract class ShellyBase{
     //Toggle
     protected String getToggleUrl() {return "http://" + ip + "/relay/" + channel + "?turn=toggle";}
 
-    protected Boolean fetchToggle() {
+    public Boolean fetchToggle() {
         try {
             String response = client.send(requestToggle, HttpResponse.BodyHandlers.ofString()).body();
             status = queryToggle(response);

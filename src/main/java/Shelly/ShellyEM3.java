@@ -46,7 +46,7 @@ public class ShellyEM3 extends ShellyBase{
         return null;
     }
 
-    protected Boolean fetchToggle() {
+    public Boolean fetchToggle() {
         return null;
     }
 
