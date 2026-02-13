@@ -1,4 +1,5 @@
 import Shelly.ShellyBase;
+import javafx.application.Platform;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -6,18 +7,25 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ShellyModel {
     private Map<Integer, ShellyBase> shellyMap = new HashMap<>();
+    private List<Integer> normalShellys = new LinkedList<>();
     private List<Integer> em3IDs = new LinkedList<>();
     private List<Integer> tempIDs = new LinkedList<>();
 
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
+    private Runnable onFinishedCallback;
 
-    public boolean addShelly(ShellyBase shelly)
+    public void addShelly(ShellyBase shelly)
     {
         if(shelly == null)
-            return false;
+            return;
 
         int id = shelly.getId();
 
@@ -27,15 +35,17 @@ public class ShellyModel {
         if (shelly.isTemp())
             tempIDs.add(id);
 
+        if(!shelly.isEm3() && !shelly.isTemp())
+            normalShellys.add(id);
+
         shellyMap.put(id, shelly);
-        return true;
     }
 
 
     public void startPolling()
     {
         int size = shellyMap.size();
-        loopStarter(shellyMap.values(), size);
+        new Thread(()->loopStarter(shellyMap.values(), size)).start();
     }
 
 
@@ -51,7 +61,7 @@ public class ShellyModel {
             }).start();
 
             try {
-                Thread.sleep(500);
+                Thread.sleep(200);
             } catch (InterruptedException ignored) {}
 
         }
@@ -92,39 +102,54 @@ public class ShellyModel {
     }
 
     public void makeShellyMaps() {
-        List<String[]> csvList = null;
+        final List<String[]> csvList;
         try {
             csvList = getShellyInfoCSV();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException(e);
         }
-        ShellyBase shelly;
-        int counterRetries = 0;
 
-        for (String[] csvShelly : csvList) {
 
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            counterRetries = 0;
-            shelly = null;
-            while (shelly == null && counterRetries < 5) {
-                shelly = ShellyBase.autodetectShelly(csvShelly[0], csvShelly[1]);
-                counterRetries++;
+        AtomicInteger index = new AtomicInteger();
+        AtomicInteger counterRetries = new AtomicInteger();
+
+        scheduler.scheduleAtFixedRate(()->{
+            if(index.get() >= csvList.size()) {
+                if(onFinishedCallback != null) {
+                    onFinishedCallback.run();
+                }
+                this.startPolling();
+                scheduler.shutdown();
+                return;
             }
 
-            if(shelly == null) {
-                System.out.println("Error with shelly autodetect " + csvShelly[0] + " retries; " + counterRetries);
-                continue;
+            if(counterRetries.get() > 5)
+            {
+                counterRetries.set(0);
+                index.getAndIncrement();
+                return;
+            }
+
+            String[] csvShelly = csvList.get(index.get());
+            ShellyBase shelly = ShellyBase.autodetectShelly(csvShelly[0],csvShelly[1]);
+            if (shelly == null)
+            {
+                counterRetries.getAndIncrement();
+                return;
             }
 
             shelly.addCords(Double.parseDouble(csvShelly[2]),Double.parseDouble(csvShelly[3]));
-
+            System.out.println(shelly);
             addShelly(shelly);
-        }
+            counterRetries.set(0);
+            index.getAndIncrement();
+            if(onFinishedCallback != null) {
+                onFinishedCallback.run();
+            }
+        },0,200, TimeUnit.MILLISECONDS);
+
     }
+
 
 
     public Map<Integer, ShellyBase> getShellyMap()
@@ -141,4 +166,14 @@ public class ShellyModel {
     {
         return tempIDs;
     }
+
+    public List<Integer> getNormalShellys()
+    {
+        return normalShellys;
+    }
+
+    public void setOnFinishedCallback(Runnable callback) {
+        this.onFinishedCallback = callback;
+    }
 }
+

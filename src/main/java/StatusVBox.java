@@ -1,11 +1,12 @@
+import Shelly.ShellyBase;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import oldshelly.ShellyEm3;
-import oldshelly.ShellyException;
-import oldshelly.ShellyTemp;
+import javafx.util.Duration;
 
 
 public class StatusVBox extends VBox {
@@ -14,29 +15,19 @@ public class StatusVBox extends VBox {
     Label outTmp = new Label("0");
     Label radiatorTmp = new Label("0");
     Label boilerTmp = new Label("0");
-    static ShellyEm3 shellyEm3;
-    static ShellyTemp shellyTemp;
-    String[] temp = {"TEMP", "TEMP", "TEMP"};
-    String power = "0";
+    ShellyBase shellyEm3;
+    ShellyBase shellyTemp;
+    Double[] temp = {0.0,0.0,0.0};
+    Double power = 0.0;
     int counter = 10;
     static int restartCounter = 0;
 
-    public static int initShelly()
-    {
-        if(restartCounter++ >10)
-            return -1;
-        try {
-            shellyEm3 = ShellyEm3.getInstance();
-            shellyTemp = ShellyTemp.getInstance();
-        } catch (ShellyException e) {
-            return 0;
-        }
-        return 1;
-    }
-
-    public StatusVBox(double v)
+    public StatusVBox(double v, ShellyBase shellyEm3, ShellyBase shellyTemp)
     {
         super(v);
+
+        this.shellyEm3 = shellyEm3;
+        this.shellyTemp =  shellyTemp;
 
         this.setAlignment(Pos.TOP_CENTER);
         this.setLayoutX(1030);
@@ -61,39 +52,40 @@ public class StatusVBox extends VBox {
         boilerTmp.setFont(new Font(25));
 
         this.getChildren().addAll(l1,powerLabel,l2,outTmp,l3,radiatorTmp,l4,boilerTmp);
+        startUpdater();
     }
 
 
     public void update()
     {
-        if(counter++ < 10)
-            return;
-
         outTmp.setTextFill(Color.BLACK);
         radiatorTmp.setTextFill(Color.BLACK);
         boilerTmp.setTextFill(Color.BLACK);
         powerLabel.setTextFill(Color.BLACK);
 
-        try {
-            power = shellyEm3.getPower();
-        } catch (Exception e) {
-            powerLabel.setTextFill(Color.RED);
-        }
+        power = shellyEm3.getPower();
 
-        try {
-            temp = shellyTemp.getTemp();
-        } catch (Exception e) {
-            outTmp.setTextFill(Color.RED);
-            radiatorTmp.setTextFill(Color.RED);
-            boilerTmp.setTextFill(Color.RED);
-        }
+        temp = shellyTemp.getTemp();
 
-        powerLabel.setText(power + "W");
-        outTmp.setText(temp[0] + "°C");
-        radiatorTmp.setText(temp[1] + "°C");
-        boilerTmp.setText(temp[2] + "°C");
-        counter = 0;
+        String powerString = String.format("%.2f",power);
+        powerLabel.setText(powerString + "W");
+
+        if(power != null) {
+            outTmp.setText(temp[0] + "°C");
+            radiatorTmp.setText(temp[1] + "°C");
+            boilerTmp.setText(temp[2] + "°C");
+        }
     }
 
+    public void startUpdater()
+    {
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.seconds(5), (actionEvent) -> {
+                    update();
+                })
+        );
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+    }
 
 }

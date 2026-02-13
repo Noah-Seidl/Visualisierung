@@ -10,6 +10,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -86,7 +87,7 @@ public abstract class ShellyBase extends SubjectShelly{
             String response = client.send(requestStatus, HttpResponse.BodyHandlers.ofString()).body();
             status = queryStatus(response);
 
-            if(oldStatus != status || status == null)
+            if(!Objects.equals(oldStatus,status) || status == null)
                 Platform.runLater(()->notifyO(id));
 
             return status;

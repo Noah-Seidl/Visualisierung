@@ -28,6 +28,8 @@ public class MainFX extends Application implements ObserverShelly {
 
     ShellyModel model;
 
+    Pane pane = new Pane();
+
     Label clock = new Label("0");
     StatusVBox statusVBox;
 
@@ -38,9 +40,14 @@ public class MainFX extends Application implements ObserverShelly {
         viewMap = new HashMap<>();
 
         model = new ShellyModel();
-        model.makeShellyMaps();
-        shellyBaseMap = model.getShellyMap();
-        shellyBaseMap.values().forEach((shellyBase)->shellyBase.registerObserver(this));
+
+        model.setOnFinishedCallback(() -> {
+            Platform.runLater(this::updateUI);
+        });
+
+        new Thread(() -> {
+            model.makeShellyMaps();
+        }).start();
     }
 
     @Override
@@ -59,46 +66,36 @@ public class MainFX extends Application implements ObserverShelly {
 
 
 
-        //Draw all ShellyDevices
-        shellyBaseMap.values().stream()
-                .filter((shellyBase -> !shellyBase.isEm3() && !shellyBase.isTemp()))
-                .forEach(this::createImageView);
+
 
         //Labels
         clock.setFont(new Font(35));
         clock.setLayoutX(350);
         clock.setLayoutY(-4);
 
-        statusVBox = new StatusVBox(5);
-
         //Update every second
         Timeline timeline = new Timeline(
                 new KeyFrame(Duration.seconds(1), (actionEvent) -> {
                     setClockLabel();
-                    statusVBox.update();
                 })
         );
 
-        Pane pane = new Pane();
         pane.getChildren().add(backgroundView);
 
-        pane.getChildren().addAll(viewMap.values());
 
-        pane.getChildren().addAll(clock, statusVBox);
+        pane.getChildren().addAll(clock);
 
         Scene scene = new Scene(pane, 1366, 768);
-
-        timeline.play();
-        stage.setScene(scene);
-
         timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+
+        stage.setScene(scene);
         stage.setTitle("Visualisation");
 
         //stage.setAlwaysOnTop(true);
         stage.setResizable(false);
         stage.show();
         stage.setFullScreen(true);
-        model.startPolling();
     }
 
     private void createImageView(ShellyBase shelly) {
@@ -155,4 +152,24 @@ public class MainFX extends Application implements ObserverShelly {
     public void updateSingle(int index, boolean status) {
         viewMap.get(index).setImage(status ? bulbOn : bulbOff);
     }
+
+    public void updateUI(){
+
+        shellyBaseMap = model.getShellyMap();
+
+        if(!model.getEm3IDs().isEmpty() && !model.getTempIDs().isEmpty() && statusVBox == null) {
+            statusVBox = new StatusVBox(5, shellyBaseMap.get(model.getEm3IDs().getFirst()), shellyBaseMap.get(model.getTempIDs().getFirst()));
+            pane.getChildren().add(statusVBox);
+        }
+        shellyBaseMap.values().forEach((shellyBase)->shellyBase.registerObserver(this));
+        //Draw all ShellyDevices
+        shellyBaseMap.values().stream()
+                .filter(s -> !s.isEm3() && !s.isTemp())
+                .filter(s -> !viewMap.containsKey(s.getId()))
+                .forEach(s -> {
+                    createImageView(s);
+                    pane.getChildren().add(viewMap.get(s.getId()));
+                });
+    }
+
 }
